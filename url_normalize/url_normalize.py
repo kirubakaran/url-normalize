@@ -19,6 +19,8 @@ DEFAULT_PORT = {
 }
 DEFAULT_CHARSET = "utf-8"
 DEFAULT_SCHEME = "https"
+DEFAULT_SAFE_QUERY_PARAM_CHARS = "~:/?#[]@!$'()*+,;="
+UPDATED_SAFE_QUERY_PARAM_CHARS = "~:/[]@!$'()*+,;="
 
 
 def provide_url_scheme(url, default_scheme=DEFAULT_SCHEME):
@@ -183,7 +185,7 @@ def normalize_fragment(fragment):
     return quote(unquote(fragment), "~")
 
 
-def normalize_query(query, sort_query_params=True):
+def normalize_query(query, sort_query_params=True, use_default_safe_chars=True):
     """Normalize query part of the url.
 
     Params:
@@ -193,8 +195,9 @@ def normalize_query(query, sort_query_params=True):
         string : normalized query data.
 
     """
+    safe_query_chars = DEFAULT_SAFE_QUERY_PARAM_CHARS if use_default_safe_chars else UPDATED_SAFE_QUERY_PARAM_CHARS
     param_arr = [
-        "=".join([quote(unquote(t), "~:/?#[]@!$'()*+,;=") for t in q.split("=", 1)])
+        "=".join([quote(unquote(t), safe_query_chars) for t in q.split("=", 1)])
         for q in query.split("&")
     ]
     if sort_query_params:
@@ -204,7 +207,7 @@ def normalize_query(query, sort_query_params=True):
 
 
 def url_normalize(
-    url, charset=DEFAULT_CHARSET, default_scheme=DEFAULT_SCHEME, sort_query_params=True
+    url, charset=DEFAULT_CHARSET, default_scheme=DEFAULT_SCHEME, sort_query_params=True, use_default_safe_query_chars=True
 ):
     """URI normalization routine.
 
@@ -233,7 +236,7 @@ def url_normalize(
         scheme=normalize_scheme(url_elements.scheme),
         userinfo=normalize_userinfo(url_elements.userinfo),
         host=normalize_host(url_elements.host, charset),
-        query=normalize_query(url_elements.query, sort_query_params),
+        query=normalize_query(url_elements.query, sort_query_params, use_default_safe_query_chars),
         fragment=normalize_fragment(url_elements.fragment),
     )
     url_elements = url_elements._replace(

@@ -113,3 +113,23 @@ def test_url_normalize_with_no_params_sorting():
     actual = url_normalize(url, sort_query_params=False)
 
     assert actual == expected
+
+
+def test_use_updated_safe_query_param_charset():
+    """Assert that percent-encoded # and ? in query are not unquoted."""
+    url = "https://www.example.com/search/?q=%23discussions+with+more%3F"
+    expected = url
+
+    actual = url_normalize(url, use_default_safe_query_chars=False)
+
+    assert actual == expected
+
+
+def test_use_default_safe_query_param_charset():
+    """Assert that percent-encoded # and ? in query are unquoted."""
+    url = "https://www.example.com/search/?q=%23discussions+with+more%3F"
+    expected = "https://www.example.com/search/?q=#discussions+with+more?"
+
+    actual = url_normalize(url)
+
+    assert actual == expected
